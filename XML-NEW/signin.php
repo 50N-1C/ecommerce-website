@@ -68,7 +68,7 @@ if ($response['error']) {
     echo json_encode($response);
 } else {
     // Successful login, redirect to the admin.php page
-    header('Location: http://localhost/a7a/admin.php');
+    header('Location: http://localhost/XML/admin.php');
     exit();
 }
 
