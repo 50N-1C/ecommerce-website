@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In</title>
+</head>
+<body>
+  <h1>Sign In</h1>
+  <form id="signinForm">
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <button type="submit">Sign In</button>
+  </form>
+  
+  <!-- Error message container -->
+  <p id="errorMessage" style="color: red; font-weight: bold;"></p>
+
+  <script>
+    document.getElementById("signinForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const xmlData = createXML(formData);
+      sendDataToServer(xmlData);
+    });
+
+    function createXML(formData) {
+      let xmlString = '<?xml version="1.0" encoding="UTF-8"?><user>';
+      for (const pair of formData.entries()) {
+        const [name, value] = pair;
+        xmlString += `<${name}>${value}</${name}>`;
+      }
+      xmlString += '</user>';
+      return xmlString;
+    }
+
+    function sendDataToServer(xmlData) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost/a7a/signin.php", true);
+      xhr.setRequestHeader("Content-Type", "application/xml");
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status === 200) {
+            // Request was successful, handle the response
+            const response = JSON.parse(xhr.responseText);
+            if (!response.error) {
+              // Redirect to admin.php on successful login
+              window.location.href = 'http://localhost/a7a/admin.php';
+            } else {
+              // Display login error message in the <p> element
+              const errorMessageElement = document.getElementById("errorMessage");
+              errorMessageElement.textContent = "Login failed: " + response.message;
+            }
+          } else {
+            // Request failed, handle the error
+            console.error("Error:", xhr.status, xhr.statusText);
+          }
+        }
+      };
+      xhr.send(xmlData);
+    }
+  </script>
+</body>
+</html>

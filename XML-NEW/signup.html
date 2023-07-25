@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Signup</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>User Signup</h1>
+        <form id="signupForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <!-- Hidden input field for user role -->
+            <input type="hidden" name="role" value="user">
+
+            <button type="button" onclick="sendData()">Sign Up</button>
+        </form>
+        <div id="message"></div> <!-- Element to show the message -->
+    </div>
+
+    <script>
+        function sendData() {
+            // Get form data
+            const formData = new FormData(document.getElementById('signupForm'));
+
+            // Convert form data to XML
+            let xmlData = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xmlData += '<userSignup>\n';
+            formData.forEach((value, key) => {
+                xmlData += `    <${key}>${value}</${key}>\n`;
+            });
+            xmlData += '</userSignup>';
+
+            // Send the XML data to the target_webservice using fetch API
+            fetch('http://localhost/a7a/register.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/xml', // Set the content type to application/xml
+                },
+                body: xmlData,
+            })
+            .then(response => response.text())
+            .then(responseText => {
+                // Process the response
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(responseText, 'text/xml');
+                const error = xmlDoc.querySelector('error').textContent;
+                const message = xmlDoc.querySelector('message').textContent;
+
+                // Show the message to the user
+                const messageDiv = document.getElementById('message');
+                if (error === 'true') {
+                    messageDiv.textContent = 'User registration failed: ' + message;
+                } else {
+                    messageDiv.textContent = 'User registration successful: ' + message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
